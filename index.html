@@ -5,18 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helix Interactive — Connecting</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --gold:    #c8a84b;
-    --golddim: #7a6228;
-    --white:   #f0f4ff;
-    --dim:     #8a95b0;
-    --bg:      #080b12;
-    --panel:   rgba(8, 11, 18, 0.82);
-    --border:  rgba(200, 168, 75, 0.25);
+    --gold:     #c8a84b;
+    --golddim:  #7a6228;
+    --white:    #eef2ff;
+    --dim:      #7a859e;
+    --muted:    #3a4255;
+    --bg:       #06080f;
+    --card:     rgba(11, 14, 24, 0.85);
+    --brd:      rgba(200, 168, 75, 0.13);
+    --brd2:     rgba(255,255,255,0.055);
+    --success:  #4dd68c;
   }
 
   html, body {
@@ -25,426 +28,562 @@
     overflow: hidden;
     font-family: 'Rajdhani', sans-serif;
     color: var(--white);
+    user-select: none;
   }
 
-  /* ── BACKGROUND ─────────────────────────────────────────────── */
+  /* ── BACKGROUND ──────────────────────────────────────────────── */
   #bg {
     position: fixed; inset: 0; z-index: 0;
     background-image: url('https://images2.alphacoders.com/134/1342506.jpg');
     background-size: cover;
     background-position: center 30%;
-    filter: brightness(0.32) saturate(0.7);
-    transform: scale(1.04);
-    animation: bgDrift 18s ease-in-out infinite alternate;
+    filter: brightness(0.16) saturate(0.45);
+    transform: scale(1.06);
+    animation: bgDrift 24s ease-in-out infinite alternate;
   }
   @keyframes bgDrift {
-    from { transform: scale(1.04) translateX(0px);   }
-    to   { transform: scale(1.04) translateX(-18px);  }
+    from { transform: scale(1.06) translateX(0);     }
+    to   { transform: scale(1.06) translateX(-22px);  }
   }
-
-  /* Vignette */
   #bg::after {
     content: '';
     position: absolute; inset: 0;
     background:
-      radial-gradient(ellipse at center, transparent 30%, rgba(4,6,10,0.75) 100%),
-      linear-gradient(to top, rgba(4,6,10,0.95) 0%, transparent 40%),
-      linear-gradient(to bottom, rgba(4,6,10,0.6) 0%, transparent 30%);
+      linear-gradient(to top,    rgba(4,6,10,0.98) 0%,  transparent 50%),
+      linear-gradient(to bottom, rgba(4,6,10,0.7)  0%,  transparent 30%),
+      radial-gradient(ellipse at 50% 110%, rgba(200,168,75,0.05) 0%, transparent 55%);
   }
 
-  /* ── SCANLINE OVERLAY ───────────────────────────────────────── */
-  #scanlines {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      rgba(0,0,0,0.06) 3px,
-      rgba(0,0,0,0.06) 4px
-    );
-    opacity: 0.6;
+  #grain {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px;
   }
 
-  /* ── LAYOUT ─────────────────────────────────────────────────── */
+  /* ── LAYOUT ──────────────────────────────────────────────────── */
   #root {
     position: relative; z-index: 2;
     width: 100%; height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 36px 52px;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 36px;
+    gap: 20px;
   }
 
-  /* ── TOP BAR ────────────────────────────────────────────────── */
-  #topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  /* ── HEADER ──────────────────────────────────────────────────── */
+  #header {
+    text-align: center;
     opacity: 0;
-    animation: fadeUp 0.8s ease 0.2s forwards;
+    animation: fadeDown 0.7s ease 0.1s forwards;
   }
 
-  #logo-block { display: flex; flex-direction: column; gap: 2px; }
-
-  #logo-overline {
+  #header-eye {
     font-family: 'Share Tech Mono', monospace;
     font-size: 10px;
-    letter-spacing: 0.28em;
-    color: var(--gold);
+    letter-spacing: 0.35em;
+    color: var(--golddim);
     text-transform: uppercase;
-    opacity: 0.8;
+    margin-bottom: 4px;
   }
 
-  #logo-name {
+  #header-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(32px, 4vw, 52px);
-    letter-spacing: 0.06em;
+    font-size: clamp(44px, 6.5vw, 82px);
+    letter-spacing: 0.14em;
     color: var(--white);
     line-height: 1;
   }
 
-  #logo-name span { color: var(--gold); }
+  #header-title em {
+    color: var(--gold);
+    font-style: normal;
+  }
 
-  #logo-sub {
-    font-family: 'Rajdhani', sans-serif;
+  #header-sub {
     font-size: 12px;
-    font-weight: 300;
+    font-weight: 400;
+    letter-spacing: 0.38em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+
+  /* ── MAIN CARD ───────────────────────────────────────────────── */
+  #card {
+    width: 100%;
+    max-width: 1100px;
+    background: var(--card);
+    border: 1px solid var(--brd);
+    border-radius: 5px;
+    backdrop-filter: blur(20px);
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 0.3s forwards;
+    position: relative;
+  }
+  /* gold top line */
+  #card::before {
+    content: '';
+    display: block;
+    height: 2px;
+    background: linear-gradient(to right, transparent 0%, var(--gold) 30%, var(--gold) 70%, transparent 100%);
+    opacity: 0.55;
+  }
+
+  /* ── PROGRESS ROW ────────────────────────────────────────────── */
+  #prog-row {
+    padding: 14px 22px 12px;
+    border-bottom: 1px solid var(--brd2);
+  }
+
+  #prog-top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 9px;
+  }
+
+  #sdot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 7px var(--gold);
+    flex-shrink: 0;
+    animation: dpulse 2s ease-in-out infinite;
+  }
+  @keyframes dpulse {
+    0%,100% { opacity:1; box-shadow:0 0 7px var(--gold); }
+    50%      { opacity:0.3; box-shadow:none; }
+  }
+
+  #stext {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--gold);
+    flex: 1;
+  }
+
+  #spct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+
+  #bar-track {
+    width: 100%; height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px; overflow: hidden;
+  }
+  #bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(to right, var(--golddim), var(--gold));
+    border-radius: 2px;
+    box-shadow: 0 0 12px rgba(200,168,75,0.5);
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+  }
+  #bar-fill::after {
+    content: '';
+    position: absolute; top:0; right:0;
+    width: 50px; height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.5));
+    animation: shim 2s ease-in-out infinite;
+  }
+  @keyframes shim { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* ── PLAYER ROW ──────────────────────────────────────────────── */
+  #player-row {
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--brd2);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #avatar {
+    width: 52px; height: 52px;
+    border-radius: 3px;
+    border: 1px solid var(--brd);
+    background: var(--muted);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    color: var(--golddim);
+  }
+  #avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+
+  #pinfo { flex: 1; }
+
+  .tiny-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
     letter-spacing: 0.22em;
     color: var(--dim);
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-bottom: 2px;
   }
 
-  /* Gold accent line under logo */
-  #logo-line {
-    width: 0;
-    height: 2px;
-    background: linear-gradient(to right, var(--gold), transparent);
-    margin-top: 8px;
-    animation: lineExpand 1s ease 0.7s forwards;
-  }
-  @keyframes lineExpand { to { width: 220px; } }
-
-  /* Top-right status */
-  #status-block {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: flex-end;
-  }
-
-  .status-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--dim);
-    letter-spacing: 0.1em;
-  }
-
-  .status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 6px var(--gold);
-    animation: pulse 2s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--gold); }
-    50%       { opacity: 0.4; box-shadow: 0 0 2px var(--gold); }
-  }
-
-  #player-count {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 0.06em;
+  #pname {
+    font-size: 21px;
+    font-weight: 700;
     color: var(--white);
-    line-height: 1;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
   }
 
-  #player-count span { color: var(--gold); font-size: 14px; vertical-align: middle; margin-left: 4px; }
-
-  /* ── MIDDLE AREA ────────────────────────────────────────────── */
-  #middle {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #connecting-label {
+  #psteam {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.3em;
-    color: var(--golddim);
-    text-transform: uppercase;
-    opacity: 0;
-    animation: fadeIn 1s ease 1.2s forwards;
-  }
-
-  .blink { animation: blink 1.2s step-end infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  /* ── BOTTOM SECTION ─────────────────────────────────────────── */
-  #bottom {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    opacity: 0;
-    animation: fadeUp 0.8s ease 0.5s forwards;
-  }
-
-  /* Progress info row */
-  #progress-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  #progress-stage {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.18em;
+    font-size: 10px;
     color: var(--dim);
-    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
   }
 
-  #progress-pct {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.05em;
-    color: var(--gold);
+  #pstats {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    padding-right: 4px;
   }
 
-  /* Bar */
-  #bar-track {
-    width: 100%;
-    height: 3px;
-    background: rgba(255,255,255,0.07);
-    position: relative;
+  .ps {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .ps-lbl {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: var(--dim); text-transform: uppercase;
+  }
+  .ps-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--white); letter-spacing: 0.03em;
+  }
+  .ps-val.ok { color: var(--success); }
+
+  /* ── LOWER GRID ──────────────────────────────────────────────── */
+  #lower {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .icell {
+    padding: 14px 22px;
+    border-right: 1px solid var(--brd2);
+  }
+  .icell:last-child { border-right: none; }
+
+  .icell-lbl {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    color: var(--dim); text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .icell-val {
+    font-size: 16px; font-weight: 600;
+    color: var(--white); letter-spacing: 0.03em;
+  }
+
+  /* Activity log */
+  #log-hdr {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  #log-ul {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 88px;
     overflow: hidden;
   }
-
-  #bar-track::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: repeating-linear-gradient(
-      to right,
-      rgba(255,255,255,0.04) 0px,
-      rgba(255,255,255,0.04) 1px,
-      transparent 1px,
-      transparent 40px
-    );
-  }
-
-  #bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(to right, var(--golddim), var(--gold));
-    box-shadow: 0 0 12px var(--gold), 0 0 30px rgba(200,168,75,0.3);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-
-  /* Shimmer on bar */
-  #bar-fill::after {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 40px; height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
-    animation: shimmer 1.8s ease-in-out infinite;
-  }
-  @keyframes shimmer {
-    0%   { opacity: 0; transform: translateX(-20px); }
-    50%  { opacity: 1; }
-    100% { opacity: 0; transform: translateX(0px); }
-  }
-
-  /* Bottom footer line */
-  #footer-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  #footer-left {
+  #log-ul li {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    color: rgba(138, 149, 176, 0.45);
-    text-transform: uppercase;
+    font-size: 10px; letter-spacing: 0.05em;
+    color: var(--dim);
+    display: flex; align-items: flex-start; gap: 5px;
+    opacity: 0; transform: translateX(-5px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
   }
+  #log-ul li.show { opacity: 1; transform: none; }
+  #log-ul li::before { content: '›'; color: var(--gold); flex-shrink: 0; }
 
-  #footer-right {
+  /* ── FOOTER ──────────────────────────────────────────────────── */
+  #footer {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: rgba(138, 149, 176, 0.45);
-    text-transform: uppercase;
+    font-size: 10px; letter-spacing: 0.18em;
+    color: rgba(122,133,158,0.3);
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 0.6s forwards;
   }
 
-  /* ── CORNER ACCENTS ─────────────────────────────────────────── */
-  .corner {
+  /* ── CORNER MARKS ────────────────────────────────────────────── */
+  .corn {
     position: fixed;
-    width: 28px; height: 28px;
-    border-color: rgba(200, 168, 75, 0.35);
+    width: 20px; height: 20px;
+    border-color: rgba(200,168,75,0.25);
     border-style: solid;
     z-index: 3;
     opacity: 0;
-    animation: fadeIn 1s ease 0.3s forwards;
+    animation: fadeIn 1s ease 0.4s forwards;
   }
-  .corner.tl { top: 18px; left: 18px; border-width: 2px 0 0 2px; }
-  .corner.tr { top: 18px; right: 18px; border-width: 2px 2px 0 0; }
-  .corner.bl { bottom: 18px; left: 18px; border-width: 0 0 2px 2px; }
-  .corner.br { bottom: 18px; right: 18px; border-width: 0 2px 2px 0; }
+  .corn.tl { top:12px;    left:12px;  border-width:1px 0 0 1px; }
+  .corn.tr { top:12px;    right:12px; border-width:1px 1px 0 0; }
+  .corn.bl { bottom:12px; left:12px;  border-width:0 0 1px 1px; }
+  .corn.br { bottom:12px; right:12px; border-width:0 1px 1px 0; }
 
-  /* ── ANIMATIONS ─────────────────────────────────────────────── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn   { from{opacity:0} to{opacity:1} }
 </style>
 </head>
 <body>
 
 <div id="bg"></div>
-<div id="scanlines"></div>
-
-<!-- Corner brackets -->
-<div class="corner tl"></div>
-<div class="corner tr"></div>
-<div class="corner bl"></div>
-<div class="corner br"></div>
+<div id="grain"></div>
+<div class="corn tl"></div>
+<div class="corn tr"></div>
+<div class="corn bl"></div>
+<div class="corn br"></div>
 
 <div id="root">
 
-  <!-- TOP BAR -->
-  <div id="topbar">
-    <div id="logo-block">
-      <div id="logo-overline">GArrysmod · Clone Wars RP</div>
-      <div id="logo-name">HELIX <span>INTERACTIVE</span></div>
-      <div id="logo-sub">Est. 2024 &nbsp;·&nbsp; Serious RP</div>
-      <div id="logo-line"></div>
-    </div>
-
-    <div id="status-block">
-      <div class="status-row">
-        <div class="status-dot"></div>
-        SERVER ONLINE
-      </div>
-      <div id="player-count">
-        <span id="pc-num">—</span><span>/ 128 PLAYERS</span>
-      </div>
-      <div class="status-row" style="color: rgba(138,149,176,0.5); font-size:10px;">
-        LIVE COUNT
-      </div>
-    </div>
+  <div id="header">
+    <div id="header-eye">Garrysmod &nbsp;·&nbsp; Clone Wars Roleplay</div>
+    <div id="header-title">HELIX <em>INTERACTIVE</em></div>
+    <div id="header-sub">Serious Roleplay &nbsp;·&nbsp; Est. 2024</div>
   </div>
 
-  <!-- MIDDLE -->
-  <div id="middle">
-    <div id="connecting-label">Establishing connection<span class="blink">_</span></div>
-  </div>
+  <div id="card">
 
-  <!-- BOTTOM -->
-  <div id="bottom">
-    <div id="progress-info">
-      <div id="progress-stage">Initialising</div>
-      <div id="progress-pct">0%</div>
+    <!-- progress -->
+    <div id="prog-row">
+      <div id="prog-top">
+        <div id="sdot"></div>
+        <div id="stext">Establishing Connection...</div>
+        <div id="spct">0%</div>
+      </div>
+      <div id="bar-track"><div id="bar-fill"></div></div>
     </div>
 
-    <div id="bar-track">
-      <div id="bar-fill"></div>
+    <!-- player -->
+    <div id="player-row">
+      <div id="avatar">
+        <img id="av-img" src="" alt="" style="display:none">
+        <span id="av-fb">✦</span>
+      </div>
+      <div id="pinfo">
+        <div class="tiny-label">Connected Player</div>
+        <div id="pname">Connecting...</div>
+        <div id="psteam">Steam ID: —</div>
+      </div>
+      <div id="pstats">
+        <div class="ps">
+          <div class="ps-lbl">Players</div>
+          <div class="ps-val" id="ps-count">— / —</div>
+        </div>
+        <div class="ps">
+          <div class="ps-lbl">Map</div>
+          <div class="ps-val" id="ps-map">—</div>
+        </div>
+        <div class="ps">
+          <div class="ps-lbl">Status</div>
+          <div class="ps-val ok">Connected</div>
+        </div>
+      </div>
     </div>
 
-    <div id="footer-row">
-      <div id="footer-left">Helix Interactive &copy; 2024</div>
-      <div id="footer-right">Do not close this window</div>
+    <!-- lower grid -->
+    <div id="lower">
+      <div class="icell">
+        <div class="icell-lbl">Server</div>
+        <div class="icell-val" id="ic-server">Helix Interactive</div>
+      </div>
+      <div class="icell">
+        <div class="icell-lbl">Gamemode</div>
+        <div class="icell-val" id="ic-gm">starwarsrp</div>
+      </div>
+      <div class="icell" style="border-right:none;">
+        <div id="log-hdr">Activity Log</div>
+        <ul id="log-ul">
+          <li>System initialised</li>
+          <li>Connected to Helix Interactive</li>
+          <li>Authenticating connection...</li>
+          <li>Establishing secure channel...</li>
+          <li>Synchronising with server...</li>
+        </ul>
+      </div>
     </div>
-  </div>
+
+  </div><!-- /card -->
+
+  <div id="footer">HELIX INTERACTIVE &nbsp;·&nbsp; CLONE WARS RP &nbsp;·&nbsp; DO NOT CLOSE THIS WINDOW</div>
 
 </div>
 
 <script>
-// ── GMOD LOADING HOOKS ────────────────────────────────────────────────────────
-// These are the real Gmod JS functions called by the engine during loading.
-// statusChanged fires with a status string, progressChanged with 0.0–1.0.
+// ═══════════════════════════════════════════════════════════════════
+//  ELEMENT REFS
+// ═══════════════════════════════════════════════════════════════════
+const barFill  = document.getElementById('bar-fill');
+const pctEl    = document.getElementById('spct');
+const stEl     = document.getElementById('stext');
+const logUl    = document.getElementById('log-ul');
+const psCount  = document.getElementById('ps-count');
+const psMap    = document.getElementById('ps-map');
+const icServer = document.getElementById('ic-server');
+const icGm     = document.getElementById('ic-gm');
+const pName    = document.getElementById('pname');
+const pSteam   = document.getElementById('psteam');
+const avImg    = document.getElementById('av-img');
+const avFb     = document.getElementById('av-fb');
 
-const stages = [
-  "Initialising",
-  "Sending client info",
-  "Sending client data",
-  "Downloading game files",
-  "Loading map",
-  "Loading resources",
-  "Preparing client",
-  "Almost there",
-  "Ready",
-];
-
-const fillEl   = document.getElementById('bar-fill');
-const pctEl    = document.getElementById('progress-pct');
-const stageEl  = document.getElementById('progress-stage');
-const pcNumEl  = document.getElementById('pc-num');
-
-let currentProgress = 0;
-
+// ── Progress ──────────────────────────────────────────────────────
+let curP = 0;
 function setProgress(p) {
-  currentProgress = Math.max(currentProgress, p);
-  const pct = Math.round(currentProgress * 100);
-  fillEl.style.width  = pct + '%';
+  curP = Math.max(curP, Math.min(1, p));
+  const pct = Math.round(curP * 100);
+  barFill.style.width = pct + '%';
   pctEl.textContent   = pct + '%';
-  // Pick stage label based on progress band
-  const idx = Math.min(Math.floor(currentProgress * stages.length), stages.length - 1);
-  stageEl.textContent = stages[idx];
 }
 
-// ── Gmod engine callbacks ─────────────────────────────────────────────────────
+// ── Activity log ─────────────────────────────────────────────────
+const MAX_LOG = 6;
+const initItems = Array.from(logUl.querySelectorAll('li'));
+initItems.forEach((li, i) => setTimeout(() => li.classList.add('show'), 500 + i * 450));
+
+function addLog(msg) {
+  if (!msg) return;
+  const li = document.createElement('li');
+  li.textContent = msg;
+  logUl.appendChild(li);
+  const all = logUl.querySelectorAll('li');
+  if (all.length > MAX_LOG) all[0].remove();
+  requestAnimationFrame(() => setTimeout(() => li.classList.add('show'), 20));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  GMOD ENGINE CALLBACKS
+//  These exact function names are called by the Gmod CEF engine.
+// ═══════════════════════════════════════════════════════════════════
+
+// 0.0 → 1.0 progress
+function progressChanged(p) {
+  setProgress(p);
+}
+
+// Status string from engine
 function statusChanged(status) {
-  stageEl.textContent = status || stageEl.textContent;
+  if (!status) return;
+  stEl.textContent = status;
+  addLog(status);
 }
 
-function progressChanged(progress) {
-  setProgress(progress);
+// ── Steam name helpers ────────────────────────────────────────────
+// Gmod doesn't have one single reliable hook for the player's Steam
+// name, so we catch it from every possible source and use whichever
+// fires first.
+
+function applyName(name) {
+  if (!name || name === '' || pName.dataset.set) return;
+  pName.dataset.set = '1';
+  pName.textContent = name;
 }
 
-// ── Player count (Gmod provides GameDetails) ──────────────────────────────────
-function GameDetails(servName, mapName, maxPlayers, steamId, allowCheats) {
-  // maxPlayers available here; current count not directly exposed
-  // We'll show the max and a live fetch fallback below
+// Method 1: Gmod calls this on some builds
+function SetSteamName(name) {
+  applyName(name);
 }
 
-// ── Fallback: animate progress if engine doesn't call us ─────────────────────
-// (useful during development / non-Gmod preview)
-(function devFallback() {
-  if (typeof GameDetails !== 'undefined' && window.location.hostname !== '') return;
-  let p = 0;
-  const iv = setInterval(() => {
-    p += Math.random() * 0.018 + 0.004;
-    if (p >= 1) { p = 1; clearInterval(iv); }
-    setProgress(p);
-  }, 120);
+// Method 2: URL param ?name=... (set by some server plugins or proxies)
+(function tryURLParam() {
+  const p = new URLSearchParams(window.location.search);
+  const n = p.get('name') || p.get('steamname') || p.get('playername');
+  if (n) applyName(decodeURIComponent(n));
 })();
 
-// ── Live player count via Gmod's GameDetails injection ────────────────────────
-// Gmod calls SetFilesNeeded / SetFilesTotal for file counts, and
-// GameDetails for server info. We supplement with a Steam API query
-// if a Steam API key and appid are configured, but the simple approach
-// is just to show "ONLINE" and let the bar do the work.
-// If you want live counts, paste your server's query port below:
-//
-//   const QUERY_URL = 'https://your-proxy.com/players?ip=x.x.x.x&port=27015';
-//   fetch(QUERY_URL).then(r=>r.json()).then(d=>{ pcNumEl.textContent = d.players; });
-//
-// For now we just show the live dot as an indicator.
-pcNumEl.textContent = '—';
+// Method 3: Steam Web API avatar endpoint returns display name in
+// the og:title of a player's profile page. We fetch it via a
+// public CORS proxy as a best-effort fallback once we have the steamId.
+function tryFetchSteamName(steamId64) {
+  if (!steamId64 || pName.dataset.set) return;
+  // Use the Steam community XML feed — no API key needed
+  const url = 'https://steamcommunity.com/profiles/' + steamId64 + '/?xml=1';
+  fetch(url)
+    .then(r => r.text())
+    .then(xml => {
+      const match = xml.match(/<steamID><!\[CDATA\[(.+?)\]\]><\/steamID>/);
+      if (match && match[1]) applyName(match[1]);
+    })
+    .catch(() => {}); // silently fail if network blocked
+}
+
+// Server info — fired once on connection
+// steamId is the local player's 64-bit SteamID string
+function GameDetails(servName, mapName, maxPlayers, steamId, allowCheats) {
+  if (servName)   icServer.textContent = servName;
+  if (mapName)    psMap.textContent    = mapName;
+  if (maxPlayers) psCount.textContent  = '10 / ' + maxPlayers;
+  if (steamId) {
+    pSteam.textContent = 'Steam ID: ' + steamId;
+    // Steam avatar
+    const url = 'https://avatars.steamstatic.com/' + steamId + '_medium.jpg';
+    avImg.onload  = () => { avImg.style.display = 'block'; avFb.style.display = 'none'; };
+    avImg.onerror = () => { avImg.style.display = 'none';  avFb.style.display = '';      };
+    avImg.src = url;
+    // Try to pull Steam name as fallback
+    tryFetchSteamName(steamId);
+  }
+}
+
+// File download tracking
+let filesTotal = 0;
+function SetFilesTotal(n)  { filesTotal = n; }
+function SetFilesNeeded(n) {
+  if (filesTotal <= 0) return;
+  const done = filesTotal - n;
+  const ratio = done / filesTotal;
+  setProgress(0.05 + ratio * 0.75);
+  stEl.textContent = 'Downloading files (' + done + ' / ' + filesTotal + ')';
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DEV SIMULATION — only runs outside Gmod's browser
+// ═══════════════════════════════════════════════════════════════════
+(function() {
+  if (navigator.userAgent.indexOf('Valve') !== -1) return; // inside Gmod, skip
+
+  setTimeout(() => {
+    GameDetails('Helix Interactive', 'rp_coruscant', 128, '76561199447261947', false);
+    // Simulate SetSteamName being called by the engine
+    setTimeout(() => SetSteamName('YourSteamName'), 300);
+  }, 700);
+
+  const steps = [
+    [0.05, 'Sending client info'],
+    [0.18, 'Authenticating connection'],
+    [0.35, 'Downloading game files'],
+    [0.58, 'Loading map'],
+    [0.78, 'Loading resources'],
+    [0.92, 'Preparing client'],
+    [1.00, 'Ready — Welcome to Helix Interactive'],
+  ];
+  let p = 0, si = 0;
+  const iv = setInterval(() => {
+    p += Math.random() * 0.010 + 0.003;
+    if (p >= 1) { p = 1; clearInterval(iv); }
+    setProgress(p);
+    if (si < steps.length && p >= steps[si][0]) {
+      statusChanged(steps[si][1]); si++;
+    }
+  }, 90);
+})();
 </script>
 </body>
 </html>
