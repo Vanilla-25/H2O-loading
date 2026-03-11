@@ -439,7 +439,7 @@ html,body {
   }
 
   /* Bouncing corner brackets */
-  var ARM = 26, LW = 1.5, SPD = 0.3;
+  var ARM = 26, LW = 1.5, SPD = 0;
   /* anchor = inner corner of bracket */
   var br = [
     { c:'tl', x:0, y:0, vx: SPD, vy: SPD },
@@ -560,27 +560,35 @@ function setProgress(p) {
 ═══════════════════════════════════════════════════════════════ */
 var MAX_LOG = 5;
 
+/* Real Gmod status strings mapped to readable labels.
+   Gmod fires statusChanged() with exact strings like these — checked against
+   the Gmod wiki and community loading screen documentation. */
 var STATUS_MAP = [
-  { re: /challeng/i,               label: 'Challenging server...'           },
-  { re: /sending.*client.*info/i,  label: 'Sending client info...'          },
-  { re: /new server/i,             label: 'Initialising connection...'      },
-  { re: /sending.*client.*data/i,  label: 'Sending client data...'          },
-  { re: /verif/i,                  label: 'Verifying Steam session...'      },
-  { re: /auth/i,                   label: 'Authenticating with Steam...'    },
-  { re: /receiving.*signon/i,      label: 'Receiving signon data...'        },
-  { re: /precach/i,                label: 'Precaching resources...'         },
-  { re: /load.*map/i,              label: 'Loading map...'                  },
-  { re: /load.*resource/i,         label: 'Loading server resources...'     },
-  { re: /workshop/i,               label: 'Downloading Workshop addons...'  },
-  { re: /download/i,               label: 'Downloading content...'          },
-  { re: /lua/i,                    label: 'Running server Lua...'           },
-  { re: /initiali/i,               label: 'Initialising game...'            },
-  { re: /spawn/i,                  label: 'Spawning into server...'         },
-  { re: /ready/i,                  label: 'Ready — entering server...'      },
+  /* Early connection handshake */
+  { re: /challeng/i,                   label: 'Challenging server...'              },
+  { re: /sending.*client.*info/i,      label: 'Sending client info...'             },
+  { re: /new server/i,                 label: 'Connecting to new server...'        },
+  { re: /sending.*client.*data/i,      label: 'Sending client data...'             },
+  { re: /verif/i,                      label: 'Verifying Steam session...'         },
+  { re: /receiving.*signon/i,          label: 'Receiving server data...'           },
+  /* File downloads — Gmod says "Downloading" or "Requesting" */
+  { re: /request.*file/i,              label: 'Requesting files from server...'    },
+  { re: /download.*file/i,             label: 'Downloading files...'               },
+  /* Workshop — Gmod says "Lua Started!" when the gamemode begins loading */
+  { re: /lua started/i,                label: 'Gamemode loading — Lua started...'  },
+  /* Map loading stages */
+  { re: /load.*map|map.*load/i,        label: 'Loading map...'                     },
+  { re: /precach/i,                    label: 'Precaching resources...'            },
+  /* Gamemode / addon initialisation */
+  { re: /initiali/i,                   label: 'Initialising gamemode...'           },
+  { re: /workshop/i,                   label: 'Mounting Workshop addons...'        },
+  /* Final stages */
+  { re: /spawn/i,                      label: 'Spawning into server...'            },
+  { re: /ready/i,                      label: 'Ready — entering server...'         },
 ];
 
 /* Files sent as raw paths — show as sub-label, not a log entry */
-var FILE_RE = /\.(vtf|vmt|mdl|wav|mp3|ogg|bsp|lua|png|jpg|phy|ani)$/i;
+var FILE_RE = /\.(vtf|vmt|mdl|wav|mp3|ogg|bsp|png|jpg|phy|ani)$/i;
 
 function friendlyStatus(raw) {
   for (var i = 0; i < STATUS_MAP.length; i++) {
@@ -723,9 +731,9 @@ function SetFilesTotal(n) {
   filesTotal    = n;
   lastMilestone = -1;
   if (n > 0) {
-    stEl.textContent    = 'Preparing to download content...';
+    stEl.textContent    = 'Requesting files from server...';
     subEl.style.display = 'none';
-    addLog('Downloading ' + n + ' files from server...');
+    addLog('Downloading ' + n + ' files from server');
   }
 }
 
@@ -777,25 +785,36 @@ function SetFilesNeeded(n) {
      at = progress fraction (0.0–1.0) at which this step fires.
      s  = status string passed to statusChanged()
      f  = arbitrary function to call instead */
+  /* These strings match what Gmod's CEF actually fires in statusChanged().
+     File paths (.mdl, .vmt etc.) are intercepted by FILE_RE and shown as
+     sub-labels rather than log entries. */
   var seq = [
-    { at:0.02, s:'Challenging server'                        },
-    { at:0.05, s:'Sending client info'                       },
-    { at:0.08, s:'Sending client data'                       },
-    { at:0.11, s:'Verifying Steam session'                   },
-    { at:0.14, s:'Receiving signon data'                     },
-    { at:0.16, f:function(){ SetFilesTotal(124); }           },
-    { at:0.21, s:'models/clone_trooper/ct_phase2.mdl'        },
-    { at:0.31, s:'materials/models/ct_phase2.vmt'            },
-    { at:0.39, f:function(){ SetFilesNeeded(62); }           },
-    { at:0.45, s:'sound/helix/ambient_hangar.wav'            },
-    { at:0.53, f:function(){ SetFilesNeeded(31); }           },
-    { at:0.59, s:'Workshop addon: 501st Legion Pack'         },
-    { at:0.67, f:function(){ SetFilesNeeded(0); }            },
-    { at:0.77, s:'Loading map'                               },
-    { at:0.84, s:'Precaching resources'                      },
-    { at:0.90, s:'Running server Lua'                        },
-    { at:0.95, s:'Spawning'                                  },
-    { at:1.00, s:'Ready'                                     },
+    /* Connection handshake */
+    { at:0.02, s:'Challenging'                                     },
+    { at:0.05, s:'Sending client info'                             },
+    { at:0.08, s:'Sending client data'                             },
+    { at:0.11, s:'Verifying Steam session'                         },
+    { at:0.13, s:'Receiving signon data'                           },
+    /* Gmod fires SetFilesTotal / SetFilesNeeded for HTTP downloads */
+    { at:0.15, f:function(){ SetFilesTotal(124); }                 },
+    /* Individual file paths come through statusChanged as-is */
+    { at:0.19, s:'models/clone_trooper/ct_phase2.mdl'              },
+    { at:0.26, s:'materials/models/ct_phase2/ct_phase2.vmt'        },
+    { at:0.33, s:'materials/models/ct_phase2/ct_phase2.vtf'        },
+    { at:0.38, f:function(){ SetFilesNeeded(62); }                 },
+    { at:0.42, s:'sound/helix/clone_vo_01.wav'                     },
+    { at:0.49, s:'models/weapons/w_rif_dc15a.mdl'                  },
+    { at:0.54, f:function(){ SetFilesNeeded(31); }                 },
+    { at:0.62, f:function(){ SetFilesNeeded(0); }                  },
+    /* After downloads — Gmod loads the map BSP */
+    { at:0.70, s:'Loading map'                                     },
+    /* Gmod fires this exact string when Lua starts */
+    { at:0.76, s:'Lua Started!'                                    },
+    { at:0.82, s:'Precaching'                                      },
+    /* Gamemode init */
+    { at:0.88, s:'Initializing'                                    },
+    { at:0.94, s:'Spawning'                                        },
+    { at:1.00, s:'Ready'                                           },
   ];
 
   var p = 0, si = 0;
