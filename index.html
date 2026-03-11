@@ -34,7 +34,7 @@
   /* ── BACKGROUND ──────────────────────────────────────────────── */
   #bg {
     position: fixed; inset: 0; z-index: 0;
-    background-image: url('https://images2.alphacoders.com/134/1342506.jpg');
+    background-image: url('https://cdnb.artstation.com/p/assets/images/images/006/897/561/large/björn-hurri-env-coruscant.jpg');
     background-size: cover;
     background-position: center 30%;
     filter: brightness(0.16) saturate(0.45);
@@ -68,8 +68,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px 36px;
-    gap: 20px;
+    padding: 20px 36px;
+    gap: 16px;
   }
 
   /* ── HEADER ──────────────────────────────────────────────────── */
@@ -113,7 +113,7 @@
   /* ── MAIN CARD ───────────────────────────────────────────────── */
   #card {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1300px;
     background: var(--card);
     border: 1px solid var(--brd);
     border-radius: 5px;
@@ -196,7 +196,7 @@
 
   /* ── PLAYER ROW ──────────────────────────────────────────────── */
   #player-row {
-    padding: 14px 22px;
+    padding: 18px 22px;
     border-bottom: 1px solid var(--brd2);
     display: flex;
     align-items: center;
@@ -273,7 +273,7 @@
   }
 
   .icell {
-    padding: 14px 22px;
+    padding: 18px 22px;
     border-right: 1px solid var(--brd2);
   }
   .icell:last-child { border-right: none; }
@@ -527,9 +527,16 @@ function tryFetchSteamName(steamId64) {
 // Server info — fired once on connection
 // steamId is the local player's 64-bit SteamID string
 function GameDetails(servName, mapName, maxPlayers, steamId, allowCheats) {
-  if (servName)   icServer.textContent = servName;
-  if (mapName)    psMap.textContent    = mapName;
-  if (maxPlayers) psCount.textContent  = '10 / ' + maxPlayers;
+  if (servName) icServer.textContent = servName;
+
+  // Sanitise mapName — Gmod sometimes passes the sv_loadingurl here instead
+  // of the actual map. We detect URLs and ignore them, keeping the last
+  // known real map name (or the placeholder dash).
+  if (mapName && !mapName.startsWith('http') && !mapName.startsWith('//')) {
+    psMap.textContent = mapName;
+  }
+
+  if (maxPlayers) psCount.textContent = '10 / ' + maxPlayers;
   if (steamId) {
     pSteam.textContent = 'Steam ID: ' + steamId;
     // Steam avatar
