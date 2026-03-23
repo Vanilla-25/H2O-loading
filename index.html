@@ -6,86 +6,106 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, sans-serif;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
 
-    body {
-        overflow: hidden;
-        color: white;
-    }
+body {
+    overflow: hidden;
+    color: white;
+}
 
-    /* Background image */
-    .background {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        background: url("background.jpg") center/cover no-repeat;
-        filter: blur(8px) brightness(0.6);
-        transform: scale(1.1);
-        z-index: -2;
-    }
+/* Background */
+.background {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: url("background.jpg") center/cover no-repeat;
+    filter: blur(10px) brightness(0.5);
+    transform: scale(1.1);
+    z-index: -2;
+}
 
-    /* Star particles */
-    canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: -1;
-    }
+/* Stars */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
 
-    /* Center content */
-    .center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-    }
+/* Center */
+.center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
 
-    .logo {
-        font-size: 60px;
-        font-weight: bold;
-        letter-spacing: 4px;
-    }
+/* SVG Logo */
+.logo-svg {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 10px rgba(0, 200, 255, 0.6));
+    animation: glowPulse 2s infinite alternate;
+}
 
-    .subtitle {
-        margin-top: 10px;
-        opacity: 0.8;
+/* Glow animation */
+@keyframes glowPulse {
+    from {
+        filter: drop-shadow(0 0 5px rgba(0, 200, 255, 0.4));
     }
+    to {
+        filter: drop-shadow(0 0 25px rgba(0, 200, 255, 1));
+    }
+}
 
-    /* Loading bar */
-    .loading-container {
-        position: absolute;
-        bottom: 40px;
-        width: 80%;
-        left: 50%;
-        transform: translateX(-50%);
-    }
+.logo-text {
+    font-size: 50px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
 
-    .loading-text {
-        font-size: 14px;
-        margin-bottom: 8px;
-        opacity: 0.7;
-    }
+.subtitle {
+    margin-top: 8px;
+    opacity: 0.8;
+    font-size: 18px;
+}
 
-    .bar {
-        width: 100%;
-        height: 8px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
-        overflow: hidden;
-    }
+/* Loading bar */
+.loading-container {
+    position: absolute;
+    bottom: 40px;
+    width: 80%;
+    left: 50%;
+    transform: translateX(-50%);
+}
 
-    .progress {
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #00c6ff, #0072ff);
-        transition: width 0.3s;
-    }
+.loading-text {
+    font-size: 14px;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    transition: width 0.3s;
+}
 </style>
 </head>
 
@@ -95,8 +115,22 @@
 <canvas id="stars"></canvas>
 
 <div class="center">
-    <div class="logo">H2O</div>
-    <div class="subtitle">Networks Roleplay</div>
+
+    <!-- Custom SVG Hex Logo -->
+    <svg class="logo-svg" viewBox="0 0 100 100">
+        <polygon points="50,5 90,25 90,75 50,95 10,75 10,25"
+                 stroke="#00c6ff"
+                 stroke-width="4"
+                 fill="none"/>
+        
+        <!-- Stylized H -->
+        <line x1="30" y1="30" x2="30" y2="70" stroke="#00c6ff" stroke-width="4"/>
+        <line x1="70" y1="30" x2="70" y2="70" stroke="#00c6ff" stroke-width="4"/>
+        <line x1="30" y1="50" x2="70" y2="50" stroke="#00c6ff" stroke-width="4"/>
+    </svg>
+
+    <div class="logo-text">H2O Networks</div>
+    <div class="subtitle">Clone Wars Roleplay</div>
 </div>
 
 <div class="loading-container">
@@ -109,7 +143,7 @@
 </div>
 
 <script>
-/* Star particle effect */
+/* Stars */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
@@ -118,18 +152,17 @@ canvas.height = window.innerHeight;
 
 let stars = [];
 
-for (let i = 0; i < 150; i++) {
+for (let i = 0; i < 180; i++) {
     stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         radius: Math.random() * 1.5,
-        speed: Math.random() * 0.3
+        speed: Math.random() * 0.4
     });
 }
 
 function animateStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = "white";
 
     stars.forEach(star => {
@@ -143,19 +176,18 @@ function animateStars() {
 
     requestAnimationFrame(animateStars);
 }
-
 animateStars();
 
-/* Fake loading progress (you can replace with GMod hooks later) */
+/* Fake loading */
 let progress = 0;
 let progressBar = document.getElementById("progress");
 let loadingText = document.getElementById("loadingText");
 
 let messages = [
-    "Loading assets...",
-    "Downloading content...",
-    "Preparing server...",
-    "Syncing data...",
+    "Loading clones...",
+    "Preparing fleet...",
+    "Deploying battalions...",
+    "Linking Republic systems...",
     "Almost ready..."
 ];
 
