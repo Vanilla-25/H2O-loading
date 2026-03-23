@@ -37,44 +37,35 @@ canvas {
     z-index: -1;
 }
 
-/* Center */
+/* Center text */
 .center {
     position: absolute;
-    top: 50%;
+    top: 45%; /* slightly higher for balance */
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
 }
 
-/* SVG Logo */
-.logo-svg {
-    width: 120px;
-    height: 120px;
-    margin-bottom: 20px;
-    filter: drop-shadow(0 0 10px rgba(0, 200, 255, 0.6));
-    animation: glowPulse 2s infinite alternate;
+.logo-text {
+    font-size: 56px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    animation: glowText 2.5s ease-in-out infinite alternate;
 }
 
-/* Glow animation */
-@keyframes glowPulse {
+@keyframes glowText {
     from {
-        filter: drop-shadow(0 0 5px rgba(0, 200, 255, 0.4));
+        text-shadow: 0 0 10px rgba(0, 200, 255, 0.4);
     }
     to {
-        filter: drop-shadow(0 0 25px rgba(0, 200, 255, 1));
+        text-shadow: 0 0 25px rgba(0, 200, 255, 1);
     }
-}
-
-.logo-text {
-    font-size: 50px;
-    font-weight: bold;
-    letter-spacing: 3px;
 }
 
 .subtitle {
-    margin-top: 8px;
+    margin-top: 10px;
     opacity: 0.8;
-    font-size: 18px;
+    font-size: 20px;
 }
 
 /* Loading bar */
@@ -115,20 +106,6 @@ canvas {
 <canvas id="stars"></canvas>
 
 <div class="center">
-
-    <!-- Custom SVG Hex Logo -->
-    <svg class="logo-svg" viewBox="0 0 100 100">
-        <polygon points="50,5 90,25 90,75 50,95 10,75 10,25"
-                 stroke="#00c6ff"
-                 stroke-width="4"
-                 fill="none"/>
-        
-        <!-- Stylized H -->
-        <line x1="30" y1="30" x2="30" y2="70" stroke="#00c6ff" stroke-width="4"/>
-        <line x1="70" y1="30" x2="70" y2="70" stroke="#00c6ff" stroke-width="4"/>
-        <line x1="30" y1="50" x2="70" y2="50" stroke="#00c6ff" stroke-width="4"/>
-    </svg>
-
     <div class="logo-text">H2O Networks</div>
     <div class="subtitle">Clone Wars Roleplay</div>
 </div>
