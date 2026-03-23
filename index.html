@@ -16,6 +16,7 @@
 body {
     overflow: hidden;
     color: white;
+    background: black;
 }
 
 /* Background */
@@ -29,7 +30,6 @@ body {
     filter: blur(10px) brightness(0.5);
     z-index: -2;
 
-    /* Fade-in */
     opacity: 0;
     animation: fadeIn 2s ease forwards;
 }
@@ -150,7 +150,7 @@ canvas {
 </div>
 
 <script>
-/* Stars */
+/* Starfield + Hyperspace */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
@@ -158,34 +158,52 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 let stars = [];
+let hyperspace = false;
 
-for (let i = 0; i < 180; i++) {
+for (let i = 0; i < 200; i++) {
     stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 1.5,
-        speed: Math.random() * 0.4
+        x: Math.random() * canvas.width - canvas.width / 2,
+        y: Math.random() * canvas.height - canvas.height / 2,
+        z: Math.random() * 1000
     });
 }
 
 function animateStars() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     stars.forEach(star => {
-        star.y += star.speed;
-        if (star.y > canvas.height) star.y = 0;
+        let speed = hyperspace ? 25 : 2;
+        star.z -= speed;
 
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-        ctx.fill();
+        if (star.z <= 0) {
+            star.x = Math.random() * canvas.width - canvas.width / 2;
+            star.y = Math.random() * canvas.height - canvas.height / 2;
+            star.z = 1000;
+        }
+
+        let k = 128.0 / star.z;
+        let x = star.x * k + canvas.width / 2;
+        let y = star.y * k + canvas.height / 2;
+
+        let size = (1 - star.z / 1000) * 3;
+
+        ctx.fillStyle = "white";
+
+        if (hyperspace) {
+            ctx.fillRect(x, y, size * 8, 1);
+        } else {
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
     });
 
     requestAnimationFrame(animateStars);
 }
 animateStars();
 
-/* Parallax effect */
+/* Parallax */
 const bg = document.getElementById("bg");
 
 document.addEventListener("mousemove", (e) => {
@@ -195,7 +213,7 @@ document.addEventListener("mousemove", (e) => {
     bg.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
 });
 
-/* Fake loading */
+/* Loading */
 let progress = 0;
 let progressBar = document.getElementById("progress");
 let loadingText = document.getElementById("loadingText");
@@ -205,7 +223,7 @@ let messages = [
     "Preparing fleet...",
     "Deploying battalions...",
     "Linking Republic systems...",
-    "Almost ready..."
+    "Jumping to hyperspace..."
 ];
 
 let interval = setInterval(() => {
@@ -213,13 +231,23 @@ let interval = setInterval(() => {
 
     if (progress >= 100) {
         progress = 100;
-        loadingText.innerText = "Ready!";
+        progressBar.style.width = "100%";
+        loadingText.innerText = "Entering hyperspace...";
+
         clearInterval(interval);
+
+        hyperspace = true;
+
+        setTimeout(() => {
+            document.body.style.transition = "opacity 1.5s ease";
+            document.body.style.opacity = "0";
+        }, 1200);
+
     } else {
         loadingText.innerText = messages[Math.floor(Math.random() * messages.length)];
+        progressBar.style.width = progress + "%";
     }
 
-    progressBar.style.width = progress + "%";
 }, 700);
 </script>
 
