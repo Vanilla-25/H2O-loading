@@ -2,848 +2,177 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>H2O Networks Loading</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Helix Interactive</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
 
-:root {
-  --pink:       #e8b4b8;
-  --pinklight:  #f5d5d8;
-  --pinkdim:    #c48b90;
-  --pinkglow:   rgba(232,180,184,0.25);
-  --bg:         #0d0a0b;
-  --surface:    rgba(255,255,255,0.03);
-  --surfacehov: rgba(255,255,255,0.055);
-  --border:     rgba(232,180,184,0.12);
-  --borderbrt:  rgba(232,180,184,0.28);
-  --text:       #f0e8ea;
-  --textdim:    #8a7a7d;
-  --textfaint:  #4a3a3d;
-  --success:    #98d4a3;
-}
+    body {
+        overflow: hidden;
+        color: white;
+    }
 
-html,body {
-  width:100%;height:100%;
-  background:var(--bg);
-  overflow:hidden;
-  font-family:'DM Sans',sans-serif;
-  color:var(--text);
-  user-select:none;
-}
+    /* Background image */
+    .background {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        background: url("background.jpg") center/cover no-repeat;
+        filter: blur(8px) brightness(0.6);
+        transform: scale(1.1);
+        z-index: -2;
+    }
 
-/* ── CANVAS ─────────────────────────────────────────────────── */
-#cvs {
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-}
+    /* Star particles */
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
 
-/* ── BG IMAGE ───────────────────────────────────────────────── */
-#bg {
-  position:fixed;inset:0;z-index:1;
-  background:url('https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=1920&q=80') center/cover no-repeat;
-  filter:brightness(0.08) saturate(0.4);
-  transform:scale(1.04);
-  animation:drift 30s ease-in-out infinite alternate;
-}
-@keyframes drift{from{transform:scale(1.04) translateX(0)}to{transform:scale(1.04) translateX(-16px)}}
-#bg::after {
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(232,180,184,0.04) 0%, transparent 60%),
-    linear-gradient(to top, rgba(10,7,8,0.98) 0%, transparent 50%),
-    linear-gradient(to bottom, rgba(10,7,8,0.7) 0%, transparent 25%);
-}
+    /* Center content */
+    .center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
 
-/* ── ROOT ───────────────────────────────────────────────────── */
-#root {
-  position:relative;z-index:2;
-  width:100%;height:100%;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:32px 52px;gap:28px;
-}
+    .logo {
+        font-size: 60px;
+        font-weight: bold;
+        letter-spacing: 4px;
+    }
 
-/* ── HEADER ─────────────────────────────────────────────────── */
-#hdr {
-  text-align:center;
-  opacity:0;animation:fadedn 0.9s ease 0.15s forwards;
-}
-#hdr-label {
-  font-family:'DM Mono',monospace;
-  font-size:9px;letter-spacing:0.45em;
-  color:var(--pinkdim);text-transform:uppercase;
-  margin-bottom:10px;
-}
-#hdr-title {
-  font-family:'Playfair Display',serif;
-  font-size:clamp(42px,5.5vw,76px);
-  font-weight:400;letter-spacing:0.04em;
-  color:var(--text);line-height:1;
-}
-#hdr-title b {
-  font-weight:500;
-  background:linear-gradient(135deg,var(--pinklight),var(--pink),var(--pinkdim));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-#hdr-divider {
-  width:48px;height:1px;margin:14px auto;
-  background:linear-gradient(to right,transparent,var(--pinkdim),transparent);
-}
-#hdr-sub {
-  font-family:'DM Mono',monospace;
-  font-size:9px;letter-spacing:0.4em;
-  color:var(--textfaint);text-transform:uppercase;
-}
+    .subtitle {
+        margin-top: 10px;
+        opacity: 0.8;
+    }
 
-/* ── PANEL ──────────────────────────────────────────────────── */
-#panel {
-  width:100%;max-width:1100px;
-  background:rgba(18,12,14,0.85);
-  border:1px solid var(--border);
-  border-radius:12px;
-  overflow:hidden;
-  backdrop-filter:blur(24px);
-  opacity:0;animation:fadeup 0.9s ease 0.35s forwards;
-  box-shadow:0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-}
+    /* Loading bar */
+    .loading-container {
+        position: absolute;
+        bottom: 40px;
+        width: 80%;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-#panel-line {
-  height:1px;
-  background:linear-gradient(90deg,transparent 0%,var(--pink) 30%,var(--pinklight) 50%,var(--pink) 70%,transparent 100%);
-  opacity:0;
-  animation:lineopen 1s ease 1s forwards;
-}
-@keyframes lineopen{from{opacity:0;clip-path:inset(0 50% 0 50%)}to{opacity:0.6;clip-path:inset(0 0% 0 0%)}}
+    .loading-text {
+        font-size: 14px;
+        margin-bottom: 8px;
+        opacity: 0.7;
+    }
 
-/* ── PROGRESS ───────────────────────────────────────────────── */
-#prog {
-  padding:22px 28px 20px;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-}
-#prog-row {
-  display:flex;align-items:flex-start;gap:12px;
-  margin-bottom:14px;
-}
-#prog-dot {
-  width:6px;height:6px;border-radius:50%;
-  background:var(--pink);margin-top:4px;flex-shrink:0;
-  box-shadow:0 0 0 3px rgba(232,180,184,0.12);
-  animation:dotbeat 2.4s ease-in-out infinite;
-}
-@keyframes dotbeat{
-  0%,100%{box-shadow:0 0 0 3px rgba(232,180,184,0.12),0 0 8px rgba(232,180,184,0.4)}
-  50%{box-shadow:0 0 0 7px rgba(232,180,184,0),0 0 2px transparent}
-}
-#prog-labels{flex:1;min-width:0}
-#stext {
-  font-family:'DM Mono',monospace;
-  font-size:11px;letter-spacing:0.08em;
-  color:var(--pinklight);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-#ssubtext {
-  font-family:'DM Mono',monospace;
-  font-size:9px;letter-spacing:0.06em;
-  color:var(--textdim);margin-top:4px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  display:none;
-}
-#spct {
-  font-family:'DM Mono',monospace;
-  font-size:13px;font-weight:500;letter-spacing:0.06em;
-  color:var(--pink);flex-shrink:0;
-}
-#bar-track {
-  position:relative;height:2px;width:100%;
-  background:rgba(255,255,255,0.06);border-radius:1px;overflow:hidden;
-}
-#bar-fill {
-  position:absolute;top:0;left:0;height:100%;width:0%;
-  background:linear-gradient(90deg,var(--pinkdim),var(--pink),var(--pinklight));
-  border-radius:1px;
-  box-shadow:0 0 10px var(--pinkglow);
-  transition:width 0.5s cubic-bezier(0.25,0.8,0.25,1);
-  overflow:hidden;
-}
-#bar-fill::after {
-  content:'';
-  position:absolute;top:0;left:-200%;width:100%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent);
-  animation:sweep 3s ease-in-out infinite;
-}
-@keyframes sweep{0%{left:-200%}50%,100%{left:200%}}
+    .bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        overflow: hidden;
+    }
 
-/* ── PLAYER ROW ─────────────────────────────────────────────── */
-#ply-row {
-  display:grid;
-  grid-template-columns:auto 1fr 1px auto;
-  align-items:center;gap:0;
-  padding:20px 28px;
-  border-bottom:1px solid rgba(255,255,255,0.04);
-}
-
-#av-outer {
-  width:52px;height:52px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  background:rgba(232,180,184,0.04);
-  overflow:hidden;flex-shrink:0;
-  position:relative;
-  display:flex;align-items:center;justify-content:center;
-  font-size:20px;color:var(--textfaint);
-  margin-right:18px;
-}
-#av-outer img{width:100%;height:100%;object-fit:cover;display:block}
-#av-scan {
-  position:absolute;left:0;right:0;height:1px;top:0;
-  background:linear-gradient(90deg,transparent,rgba(232,180,184,0.7),transparent);
-  animation:avscan 3.5s ease-in-out infinite;
-}
-@keyframes avscan{0%{top:0%;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
-
-#ply-info {margin-right:28px;min-width:0}
-#ply-eyebrow {
-  font-family:'DM Mono',monospace;
-  font-size:8px;letter-spacing:0.3em;
-  color:var(--textfaint);text-transform:uppercase;margin-bottom:4px;
-}
-#ply-name {
-  font-size:18px;font-weight:500;
-  color:var(--text);letter-spacing:0.01em;line-height:1.1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-#ply-steamid {
-  font-family:'DM Mono',monospace;
-  font-size:9px;color:var(--textdim);
-  letter-spacing:0.06em;margin-top:4px;
-}
-
-#ply-divider {
-  width:1px;height:44px;
-  background:linear-gradient(to bottom,transparent,var(--border),transparent);
-  flex-shrink:0;
-}
-
-#ply-stats {
-  display:flex;align-items:stretch;gap:0;
-  margin-left:28px;
-}
-.stat {
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:0 24px;gap:5px;
-  width:110px;
-  flex-shrink:0;
-  flex-grow:0;
-  border-right:1px solid rgba(255,255,255,0.04);
-}
-.stat:last-child{border-right:none}
-.stat-label {
-  font-family:'DM Mono',monospace;
-  font-size:8px;letter-spacing:0.28em;
-  color:var(--textfaint);text-transform:uppercase;
-  white-space:nowrap;
-}
-.stat-value {
-  font-family:'DM Mono',monospace;
-  font-size:13px;font-weight:500;
-  color:var(--text);letter-spacing:0.04em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  width:100%;max-width:86px;text-align:center;
-}
-.stat-value.ok{color:var(--success)}
-
-/* ── LOWER GRID ─────────────────────────────────────────────── */
-/* FIX: 4 columns now to accommodate Tips block */
-#lower{display:grid;grid-template-columns:1fr 1fr 1fr 1.6fr}
-
-.iblock {
-  padding:18px 28px 20px;
-  border-right:1px solid rgba(255,255,255,0.04);
-  position:relative;overflow:hidden;
-}
-.iblock:last-child{border-right:none}
-.iblock::before {
-  content:'';
-  position:absolute;left:0;top:20px;bottom:20px;width:1px;
-  background:linear-gradient(to bottom,transparent,var(--pinkdim),transparent);
-  opacity:0.5;
-}
-.iblock-label {
-  font-family:'DM Mono',monospace;
-  font-size:8px;letter-spacing:0.32em;
-  color:var(--textfaint);text-transform:uppercase;margin-bottom:7px;
-}
-.iblock-val {
-  font-size:14px;font-weight:500;
-  color:var(--text);letter-spacing:0.01em;
-  min-height:1.5em;
-}
-
-/* FIX: Tip text fade transition */
-#tip-text {
-  transition:opacity 0.4s ease;
-}
-
-/* ── ACTIVITY LOG ───────────────────────────────────────────── */
-#log-block {
-  padding:18px 28px 20px;
-  border-right:none;
-}
-#log-block::before {
-  content:'';
-  position:absolute;left:0;top:20px;bottom:20px;width:1px;
-  background:linear-gradient(to bottom,transparent,var(--pinkdim),transparent);
-  opacity:0.5;
-}
-#log-title {
-  font-family:'DM Mono',monospace;
-  font-size:8px;letter-spacing:0.32em;
-  color:var(--pink);text-transform:uppercase;margin-bottom:10px;
-}
-#log-list {
-  list-style:none;
-  display:flex;flex-direction:column;gap:6px;
-  overflow:hidden;max-height:88px;
-}
-#log-list li {
-  font-family:'DM Mono',monospace;
-  font-size:10px;letter-spacing:0.04em;color:var(--textdim);
-  display:flex;align-items:baseline;gap:8px;
-  opacity:0;transform:translateY(5px);
-  transition:opacity 0.35s ease,transform 0.35s ease;
-  flex-shrink:0;
-}
-#log-list li.show{opacity:1;transform:none}
-#log-list li.fresh{color:rgba(232,180,184,0.85)}
-
-/* ── KEYFRAMES ──────────────────────────────────────────────── */
-@keyframes fadeup  {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-@keyframes fadedn  {from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+    .progress {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #00c6ff, #0072ff);
+        transition: width 0.3s;
+    }
 </style>
 </head>
+
 <body>
 
-<canvas id="cvs"></canvas>
-<div id="bg"></div>
+<div class="background"></div>
+<canvas id="stars"></canvas>
 
-<div id="root">
+<div class="center">
+    <div class="logo">H2O</div>
+    <div class="subtitle">Networks Roleplay</div>
+</div>
 
-  <!-- Header -->
-  <div id="hdr">
-    <!-- FIX 6: "Garry's Mod" spelling corrected -->
-    <div id="hdr-label">Garry's Mod · Clone Wars Roleplay</div>
-    <div id="hdr-title">Helix <b>Interactive</b></div>
-    <div id="hdr-divider"></div>
-    <div id="hdr-sub">Serious Military Roleplay</div>
-  </div>
-
-  <!-- Main panel -->
-  <div id="panel">
-    <div id="panel-line"></div>
-
-    <!-- Progress -->
-    <div id="prog">
-      <div id="prog-row">
-        <div id="prog-dot"></div>
-        <div id="prog-labels">
-          <div id="stext">Establishing connection...</div>
-          <div id="ssubtext"></div>
-        </div>
-        <div id="spct">0%</div>
-      </div>
-      <div id="bar-track"><div id="bar-fill"></div></div>
+<div class="loading-container">
+    <div class="loading-text" id="loadingText">
+        Initializing...
     </div>
-
-    <!-- Player row -->
-    <div id="ply-row">
-      <div id="av-outer">
-        <img id="av-img" src="" alt="" style="display:none">
-        <span id="av-fb">✦</span>
-        <div id="av-scan"></div>
-      </div>
-
-      <div id="ply-info">
-        <div id="ply-eyebrow">Connected Player</div>
-        <div id="ply-name">Connecting...</div>
-        <div id="ply-steamid">Steam ID: —</div>
-      </div>
-
-      <div id="ply-divider"></div>
-
-      <div id="ply-stats">
-        <div class="stat">
-          <div class="stat-label">Players</div>
-          <!-- FIX 3: No longer hard-coded "10 / max" — shows "— / max" until GMod provides real data -->
-          <div class="stat-value" id="ps-count">— / —</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Map</div>
-          <div class="stat-value" id="ps-map">—</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Status</div>
-          <div class="stat-value ok">Connected</div>
-        </div>
-      </div>
+    <div class="bar">
+        <div class="progress" id="progress"></div>
     </div>
-
-    <!-- Lower -->
-    <div id="lower">
-      <div class="iblock">
-        <div class="iblock-label">Server</div>
-        <div class="iblock-val" id="ic-server">Helix Interactive</div>
-      </div>
-      <div class="iblock">
-        <div class="iblock-label">Gamemode</div>
-        <div class="iblock-val" id="ic-gm">starwarsrp</div>
-      </div>
-      <!-- FIX 2 (Bonus): Rotating Tips block -->
-      <div class="iblock">
-        <div class="iblock-label">Tip</div>
-        <div class="iblock-val" id="tip-text"></div>
-      </div>
-      <div class="iblock" id="log-block">
-        <div id="log-title">Activity Log</div>
-        <ul id="log-list"></ul>
-      </div>
-    </div>
-
-  </div><!-- /panel -->
-
 </div>
 
 <script>
-'use strict';
+/* Star particle effect */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
 
-/* ═══════════════════════════════════════════════════════════════
-   CANVAS — stars + corner brackets
-   FIX 1: SPD changed from 0 to 0.35 so brackets actually move
-═══════════════════════════════════════════════════════════════ */
-(function () {
-  var cvs = document.getElementById('cvs');
-  var ctx = cvs.getContext('2d');
-  var W = 0, H = 0;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  var stars = [];
-  function seedStars() {
-    stars = [];
-    for (var i = 0; i < 320; i++) {
-      stars.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 1.4 + 0.25,
-        base: Math.random() * 0.55 + 0.2,
-        spd: (Math.random() * 0.5 + 0.15) * 0.001,
-        ph: Math.random() * Math.PI * 2
-      });
-    }
-  }
+let stars = [];
 
-  /* FIX 1: SPD was 0, now 0.35 — brackets will actually bounce */
-  var ARM = 26, LW = 1.5, SPD = 0.35;
-  var br = [
-    { c:'tl', x:0, y:0, vx: SPD, vy: SPD },
-    { c:'tr', x:0, y:0, vx:-SPD, vy: SPD },
-    { c:'bl', x:0, y:0, vx: SPD, vy:-SPD },
-    { c:'br', x:0, y:0, vx:-SPD, vy:-SPD }
-  ];
-  var PAD = 14;
-
-  function initBr() {
-    br[0].x = PAD;       br[0].y = PAD;
-    br[1].x = W - PAD;   br[1].y = PAD;
-    br[2].x = PAD;       br[2].y = H - PAD;
-    br[3].x = W - PAD;   br[3].y = H - PAD;
-  }
-
-  function bounds(c) {
-    var mx = W / 2, my = H / 2;
-    if (c === 'tl') return { x0: PAD,     x1: mx - ARM - PAD, y0: PAD,     y1: my - ARM - PAD };
-    if (c === 'tr') return { x0: mx + PAD, x1: W - PAD,       y0: PAD,     y1: my - ARM - PAD };
-    if (c === 'bl') return { x0: PAD,     x1: mx - ARM - PAD, y0: my + PAD, y1: H - PAD };
-                    return { x0: mx + PAD, x1: W - PAD,       y0: my + PAD, y1: H - PAD };
-  }
-
-  function drawBr(c, x, y) {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(232,180,184,0.45)';
-    ctx.lineWidth   = LW;
-    ctx.lineCap     = 'square';
-    ctx.beginPath();
-    if (c === 'tl') {
-      ctx.moveTo(x + ARM, y); ctx.lineTo(x, y); ctx.lineTo(x, y + ARM);
-    } else if (c === 'tr') {
-      ctx.moveTo(x - ARM, y); ctx.lineTo(x, y); ctx.lineTo(x, y + ARM);
-    } else if (c === 'bl') {
-      ctx.moveTo(x + ARM, y); ctx.lineTo(x, y); ctx.lineTo(x, y - ARM);
-    } else {
-      ctx.moveTo(x - ARM, y); ctx.lineTo(x, y); ctx.lineTo(x, y - ARM);
-    }
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  var t = 0;
-  function frame() {
-    ctx.clearRect(0, 0, W, H);
-    t++;
-
-    for (var i = 0; i < stars.length; i++) {
-      var s = stars[i];
-      var a = s.base + Math.sin(t * s.spd * 60 + s.ph) * s.base * 0.5;
-      a = Math.max(0.04, Math.min(1, a));
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,228,230,' + a.toFixed(3) + ')';
-      ctx.fill();
-    }
-
-    for (var j = 0; j < br.length; j++) {
-      var b  = br[j];
-      var bd = bounds(b.c);
-      b.x += b.vx; b.y += b.vy;
-      if (b.x < bd.x0) { b.x = bd.x0; b.vx =  Math.abs(b.vx); }
-      if (b.x > bd.x1) { b.x = bd.x1; b.vx = -Math.abs(b.vx); }
-      if (b.y < bd.y0) { b.y = bd.y0; b.vy =  Math.abs(b.vy); }
-      if (b.y > bd.y1) { b.y = bd.y1; b.vy = -Math.abs(b.vy); }
-      drawBr(b.c, b.x, b.y);
-    }
-
-    requestAnimationFrame(frame);
-  }
-
-  function resize() {
-    W = cvs.width  = window.innerWidth;
-    H = cvs.height = window.innerHeight;
-    seedStars();
-    initBr();
-  }
-
-  window.addEventListener('resize', resize);
-  resize();
-  requestAnimationFrame(frame);
-}());
-
-/* ═══════════════════════════════════════════════════════════════
-   ELEMENT REFS
-═══════════════════════════════════════════════════════════════ */
-var barFill  = document.getElementById('bar-fill');
-var pctEl    = document.getElementById('spct');
-var stEl     = document.getElementById('stext');
-var subEl    = document.getElementById('ssubtext');
-var logList  = document.getElementById('log-list');
-var psCount  = document.getElementById('ps-count');
-var psMap    = document.getElementById('ps-map');
-var icServer = document.getElementById('ic-server');
-var plyName  = document.getElementById('ply-name');
-var plySteam = document.getElementById('ply-steamid');
-var avImg    = document.getElementById('av-img');
-var avFb     = document.getElementById('av-fb');
-
-/* ═══════════════════════════════════════════════════════════════
-   PROGRESS
-═══════════════════════════════════════════════════════════════ */
-var curP = 0;
-function setProgress(p) {
-  curP = Math.max(curP, Math.min(1, p));
-  var pct = Math.round(curP * 100);
-  barFill.style.width = pct + '%';
-  pctEl.textContent   = pct + '%';
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ACTIVITY LOG
-═══════════════════════════════════════════════════════════════ */
-var MAX_LOG = 5;
-
-var STATUS_MAP = [
-  { re: /challeng/i,                   label: 'Challenging server...'              },
-  { re: /sending.*client.*info/i,      label: 'Sending client info...'             },
-  { re: /new server/i,                 label: 'Connecting to new server...'        },
-  { re: /sending.*client.*data/i,      label: 'Sending client data...'             },
-  { re: /verif/i,                      label: 'Verifying Steam session...'         },
-  { re: /receiving.*signon/i,          label: 'Receiving server data...'           },
-  { re: /request.*file/i,              label: 'Requesting files from server...'    },
-  { re: /download.*file/i,             label: 'Downloading files...'               },
-  { re: /lua started/i,                label: 'Gamemode loading — Lua started...'  },
-  { re: /load.*map|map.*load/i,        label: 'Loading map...'                     },
-  { re: /precach/i,                    label: 'Precaching resources...'            },
-  { re: /initiali/i,                   label: 'Initialising gamemode...'           },
-  { re: /workshop/i,                   label: 'Mounting Workshop addons...'        },
-  { re: /spawn/i,                      label: 'Spawning into server...'            },
-  { re: /ready/i,                      label: 'Ready — entering server...'         },
-];
-
-var FILE_RE = /\.(vtf|vmt|mdl|wav|mp3|ogg|bsp|png|jpg|phy|ani)$/i;
-
-function friendlyStatus(raw) {
-  for (var i = 0; i < STATUS_MAP.length; i++) {
-    if (STATUS_MAP[i].re.test(raw)) return STATUS_MAP[i].label;
-  }
-  return raw;
-}
-
-function addLog(msg) {
-  if (!msg) return;
-
-  var prev = logList.querySelectorAll('li.fresh');
-  for (var i = 0; i < prev.length; i++) prev[i].classList.remove('fresh');
-
-  var li = document.createElement('li');
-  li.textContent = msg;
-  li.classList.add('fresh');
-  logList.insertBefore(li, logList.firstChild);
-
-  var all = logList.querySelectorAll('li');
-  if (all.length > MAX_LOG) logList.removeChild(all[all.length - 1]);
-
-  requestAnimationFrame(function () {
-    setTimeout(function () { li.classList.add('show'); }, 20);
-  });
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GMOD ENGINE CALLBACKS
-═══════════════════════════════════════════════════════════════ */
-
-function progressChanged(p) {
-  setProgress(p);
-}
-
-function statusChanged(status) {
-  if (!status) return;
-
-  if (FILE_RE.test(status)) {
-    var parts = status.split('/');
-    subEl.textContent   = parts[parts.length - 1];
-    subEl.style.display = 'block';
-    return;
-  }
-
-  var friendly = friendlyStatus(status);
-  stEl.textContent    = friendly;
-  subEl.style.display = 'none';
-  addLog(friendly);
-}
-
-/* ── Steam name (URL query param fallback) ───────────────────── */
-function applyName(name) {
-  if (!name || plyName.dataset.set) return;
-  plyName.dataset.set = '1';
-  plyName.textContent = name;
-}
-
-function SetSteamName(name) {
-  applyName(name);
-}
-
-(function () {
-  var p = new URLSearchParams(window.location.search);
-  var n = p.get('name') || p.get('steamname') || p.get('playername');
-  if (n) applyName(decodeURIComponent(n));
-}());
-
-/* ── FIX 2 (Avatar + Name): Combined Steam profile fetch ────────
-   Fetches both name AND real avatar hash from the XML feed.
-   The old code used steamid directly in the avatar URL which is wrong —
-   Steam avatars require a hash from the profile XML.
-═══════════════════════════════════════════════════════════════ */
-function tryFetchSteamProfile(id64) {
-  if (!id64) return;
-
-  fetch('https://steamcommunity.com/profiles/' + id64 + '/?xml=1')
-    .then(function(r) { return r.text(); })
-    .then(function(xml) {
-
-      /* Extract display name */
-      var nameMatch = xml.match(/<steamID><!\[CDATA\[(.+?)\]\]><\/steamID>/);
-      if (nameMatch && nameMatch[1]) {
-        applyName(nameMatch[1]);
-      }
-
-      /* Extract full-size avatar URL (contains the correct hash) */
-      var avatarMatch = xml.match(/<avatarFull><!\[CDATA\[(.+?)\]\]><\/avatarFull>/);
-      if (avatarMatch && avatarMatch[1]) {
-        avImg.onload = function() {
-          avImg.style.display = 'block';
-          avFb.style.display  = 'none';
-        };
-        avImg.onerror = function() {
-          avImg.style.display = 'none';
-          avFb.style.display  = '';
-        };
-        avImg.src = avatarMatch[1];
-      }
-
-    })
-    .catch(function() {
-      /* Silently fail — GMod CEF may block cross-domain requests (FIX 5 acknowledged) */
+for (let i = 0; i < 150; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.3
     });
 }
 
-/* Called once by Gmod with server connection details */
-function GameDetails(servName, mapName, maxPlayers, steamId, allowCheats) {
+function animateStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  if (servName && typeof servName === 'string') {
-    icServer.textContent = servName;
-  }
+    ctx.fillStyle = "white";
 
-  if (mapName && typeof mapName === 'string'
-      && mapName.indexOf('http') !== 0
-      && mapName.indexOf('//') !== 0) {
-    psMap.textContent = mapName;
-  }
+    stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) star.y = 0;
 
-  /* FIX 3: Only show maxPlayers; don't hard-code a fake current player count.
-     GMod does not send current player count to the loading screen. */
-  var mp = parseInt(maxPlayers, 10);
-  if (!isNaN(mp) && mp > 0) {
-    psCount.textContent = '— / ' + mp;
-  }
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+    });
 
-  var sid = String(steamId || '');
-  var isValid64   = /^[0-9]{15,20}$/.test(sid);
-  var isLegacyFmt = /^STEAM_[0-9]:[01]:[0-9]+$/i.test(sid);
-
-  if (isValid64 || isLegacyFmt) {
-    plySteam.textContent = 'Steam ID: ' + sid;
-    if (isValid64) {
-      /* FIX 2: Use tryFetchSteamProfile instead of tryFetchSteamName.
-         This correctly retrieves both the name AND the avatar hash URL. */
-      tryFetchSteamProfile(sid);
-    }
-  }
+    requestAnimationFrame(animateStars);
 }
 
-/* ── FIX 3 (Workshop download progress) ─────────────────────────
-   Improved milestone granularity (every 10% instead of every 25%)
-   and clearer status text.
-═══════════════════════════════════════════════════════════════ */
-var filesTotal    = 0;
-var lastMilestone = -1;
+animateStars();
 
-function SetFilesTotal(total) {
-  filesTotal    = total;
-  lastMilestone = -1;
+/* Fake loading progress (you can replace with GMod hooks later) */
+let progress = 0;
+let progressBar = document.getElementById("progress");
+let loadingText = document.getElementById("loadingText");
 
-  if (total > 0) {
-    stEl.textContent    = 'Downloading workshop content...';
-    subEl.style.display = 'none';
-    addLog('Workshop download started (' + total + ' files)');
-  }
-}
-
-/* GMod counts DOWN — needed goes from total to 0 */
-function SetFilesNeeded(needed) {
-  if (filesTotal <= 0) return;
-
-  var completed = filesTotal - needed;
-  var percent   = completed / filesTotal;
-
-  /* Downloads span 5%–80% of the bar */
-  setProgress(0.05 + percent * 0.75);
-
-  stEl.textContent =
-    'Downloading workshop content — ' + completed + ' / ' + filesTotal;
-
-  /* Log at every 10% milestone (was every 25% before) */
-  var milestone = Math.floor(percent * 10) * 10;
-  if (milestone > 0 && milestone !== lastMilestone) {
-    lastMilestone = milestone;
-    addLog('Download ' + milestone + '% complete (' + completed + '/' + filesTotal + ')');
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ROTATING TIPS
-   FIX (Bonus): Tips rotate every 6 seconds with a fade transition.
-   CSS transition defined above on #tip-text.
-═══════════════════════════════════════════════════════════════ */
-var tips = [
-  'Use /radio to communicate with your squad.',
-  'Follow your commanding officer at all times.',
-  'Breaking roleplay rules may result in punishment.',
-  'Stay in formation during deployments.',
-  'Check the F4 menu for server rules and jobs.',
-  'Respect other players and staff at all times.',
-  'Use /comms to talk to command.'
+let messages = [
+    "Loading assets...",
+    "Downloading content...",
+    "Preparing server...",
+    "Syncing data...",
+    "Almost ready..."
 ];
 
-var tipIndex = 0;
-var tipEl    = document.getElementById('tip-text');
+let interval = setInterval(() => {
+    progress += Math.random() * 10;
 
-function rotateTips() {
-  tipEl.style.opacity = '0';
-  setTimeout(function() {
-    tipEl.textContent   = tips[tipIndex];
-    tipIndex            = (tipIndex + 1) % tips.length;
-    tipEl.style.opacity = '1';
-  }, 400);
-}
-
-rotateTips();
-setInterval(rotateTips, 6000);
-
-/* ═══════════════════════════════════════════════════════════════
-   DEV SIMULATION
-   FIX 7: Still intentional — only runs outside GMod's CEF (no "Valve" UA).
-   Updated to use tryFetchSteamProfile and correct player count format.
-═══════════════════════════════════════════════════════════════ */
-(function devSim() {
-  if (navigator.userAgent.indexOf('Valve') !== -1) return;
-
-  addLog('System initialised');
-
-  setTimeout(function () {
-    GameDetails(
-      'Helix Interactive | Clone Wars RP',
-      'rp_venator_notorious',
-      128,
-      '76561199447261947',
-      false
-    );
-    setTimeout(function () { SetSteamName('YourSteamName'); }, 300);
-  }, 600);
-
-  var seq = [
-    { at:0.02, s:'Challenging'                                   },
-    { at:0.05, s:'Sending client info'                           },
-    { at:0.08, s:'Sending client data'                           },
-    { at:0.11, s:'Verifying Steam session'                       },
-    { at:0.13, s:'Receiving signon data'                         },
-    { at:0.15, f:function(){ SetFilesTotal(124); }               },
-    { at:0.19, s:'models/clone_trooper/ct_phase2.mdl'            },
-    { at:0.26, s:'materials/models/ct_phase2/ct_phase2.vmt'      },
-    { at:0.33, s:'materials/models/ct_phase2/ct_phase2.vtf'      },
-    { at:0.38, f:function(){ SetFilesNeeded(62); }               },
-    { at:0.42, s:'sound/helix/clone_vo_01.wav'                   },
-    { at:0.49, s:'models/weapons/w_rif_dc15a.mdl'                },
-    { at:0.54, f:function(){ SetFilesNeeded(31); }               },
-    { at:0.62, f:function(){ SetFilesNeeded(0); }                },
-    { at:0.70, s:'Loading map'                                   },
-    { at:0.76, s:'Lua Started!'                                  },
-    { at:0.82, s:'Precaching'                                    },
-    { at:0.88, s:'Initializing'                                  },
-    { at:0.94, s:'Spawning'                                      },
-    { at:1.00, s:'Ready'                                         },
-  ];
-
-  var p = 0, si = 0;
-  var iv = setInterval(function () {
-    p = Math.min(1, p + Math.random() * 0.009 + 0.002);
-    setProgress(p);
-
-    while (si < seq.length && p >= seq[si].at) {
-      if (seq[si].s) statusChanged(seq[si].s);
-      if (seq[si].f) seq[si].f();
-      si++;
+    if (progress >= 100) {
+        progress = 100;
+        loadingText.innerText = "Ready!";
+        clearInterval(interval);
+    } else {
+        loadingText.innerText = messages[Math.floor(Math.random() * messages.length)];
     }
 
-    if (p >= 1) clearInterval(iv);
-  }, 80);
-}());
+    progressBar.style.width = progress + "%";
+}, 700);
 </script>
+
 </body>
 </html>
