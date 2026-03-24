@@ -1,3 +1,12 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>H2O Networks Loading</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
 * {
     margin: 0;
     padding: 0;
@@ -10,7 +19,7 @@ body {
     color: white;
 }
 
-/* Background (LESS blur, sharper look) */
+/* Background */
 .background {
     position: fixed;
     width: 110%;
@@ -19,7 +28,7 @@ body {
     left: -5%;
     background: url("background.jpg") center/cover no-repeat;
 
-    /* Reduced blur + better contrast */
+    /* Less blur + sharper look */
     filter: blur(4px) brightness(0.65) contrast(1.1);
     z-index: -2;
 
@@ -51,13 +60,13 @@ canvas {
     animation-delay: 0.5s;
 }
 
-/* LOGO TEXT (white glow instead of blue) */
+/* Logo text */
 .logo-text {
     font-size: 56px;
     font-weight: bold;
     letter-spacing: 4px;
 
-    /* clean white glow */
+    /* White glow */
     animation: glowTextWhite 2.5s ease-in-out infinite alternate;
 }
 
@@ -86,7 +95,7 @@ canvas {
     opacity: 0.7;
 }
 
-/* BAR (clean modern style instead of blue gradient) */
+/* Bar */
 .bar {
     width: 100%;
     height: 10px;
@@ -96,17 +105,14 @@ canvas {
     backdrop-filter: blur(5px);
 }
 
-/* NEW progress style */
 .progress {
     height: 100%;
     width: 0%;
 
-    /* soft white gradient instead of blue */
+    /* Clean white gradient */
     background: linear-gradient(90deg, #ffffff, #dcdcdc);
 
     border-radius: 20px;
-
-    /* subtle glow */
     box-shadow: 0 0 10px rgba(255,255,255,0.4);
 
     transition: width 0.3s;
@@ -128,7 +134,6 @@ canvas {
     }
 }
 
-/* WHITE glow instead of blue */
 @keyframes glowTextWhite {
     from {
         text-shadow: 0 0 8px rgba(255,255,255,0.3);
@@ -137,3 +142,100 @@ canvas {
         text-shadow: 0 0 22px rgba(255,255,255,0.9);
     }
 }
+</style>
+</head>
+
+<body>
+
+<div class="background" id="bg"></div>
+<canvas id="stars"></canvas>
+
+<div class="center">
+    <div class="logo-text">H2O Networks</div>
+    <div class="subtitle">Clone Wars Roleplay</div>
+</div>
+
+<div class="loading-container">
+    <div class="loading-text" id="loadingText">Initializing...</div>
+    <div class="bar">
+        <div class="progress" id="progress"></div>
+    </div>
+</div>
+
+<script>
+/* Stars */
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let stars = [];
+
+for (let i = 0; i < 180; i++) {
+    stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        speed: Math.random() * 0.4
+    });
+}
+
+function animateStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+
+    stars.forEach(star => {
+        star.y += star.speed;
+        if (star.y > canvas.height) star.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    requestAnimationFrame(animateStars);
+}
+animateStars();
+
+/* Parallax */
+const bg = document.getElementById("bg");
+
+document.addEventListener("mousemove", (e) => {
+    let x = (e.clientX / window.innerWidth - 0.5) * 20;
+    let y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+    bg.style.transform = `translate(${x}px, ${y}px) scale(1.1)`;
+});
+
+/* Fake loading */
+let progress = 0;
+let progressBar = document.getElementById("progress");
+let loadingText = document.getElementById("loadingText");
+
+let messages = [
+    "Loading clones...",
+    "Preparing fleet...",
+    "Deploying battalions...",
+    "Linking Republic systems...",
+    "Almost ready..."
+];
+
+let interval = setInterval(() => {
+    progress += Math.random() * 10;
+
+    if (progress >= 100) {
+        progress = 100;
+        loadingText.innerText = "Ready!";
+        clearInterval(interval);
+    } else {
+        loadingText.innerText = messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    progressBar.style.width = progress + "%";
+}, 700);
+</script>
+
+</body>
+</html>
+```
