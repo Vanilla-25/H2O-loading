@@ -4,21 +4,21 @@
 <meta charset="UTF-8">
 <title>H2O Networks Loading</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
 }
 
 body {
     overflow: hidden;
     color: white;
+    font-family: 'Rajdhani', sans-serif;
 }
 
-/* Background (NO blur now) */
+/* Background */
 .background {
     position: fixed;
     width: 110%;
@@ -26,163 +26,354 @@ body {
     top: -5%;
     left: -5%;
     background: url("background.jpg") center/cover no-repeat;
-
-    filter: brightness(0.7) contrast(1.1);
+    filter: brightness(0.6) contrast(1.1) saturate(0.85);
     z-index: -2;
 }
 
-/* Stars */
+/* Dark vignette overlay */
+.vignette {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.65) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Stars canvas */
 canvas {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: -1;
+    z-index: 0;
+    pointer-events: none;
 }
 
-/* Center text */
+/* ─── CENTER CONTENT ─── */
 .center {
     position: absolute;
-    top: 45%;
+    top: 44%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
+    z-index: 10;
+}
+
+.accent-line {
+    width: 220px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(120,200,255,0.6), transparent);
+    margin: 14px auto;
 }
 
 .logo-text {
-    font-size: 56px;
-    font-weight: bold;
-    letter-spacing: 4px;
+    font-family: 'Orbitron', monospace;
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow:
+        0 0 12px rgba(100,180,255,0.9),
+        0 0 40px rgba(80,160,255,0.45),
+        0 0 80px rgba(60,140,255,0.2);
+    animation: logoPulse 4s ease-in-out infinite;
+}
 
-    text-shadow: 0 0 20px rgba(255,255,255,0.8);
+@keyframes logoPulse {
+    0%, 100% { text-shadow: 0 0 12px rgba(100,180,255,0.9), 0 0 40px rgba(80,160,255,0.45), 0 0 80px rgba(60,140,255,0.2); }
+    50%       { text-shadow: 0 0 18px rgba(120,200,255,1),   0 0 60px rgba(90,170,255,0.6),  0 0 100px rgba(70,150,255,0.3); }
 }
 
 .subtitle {
-    margin-top: 10px;
-    opacity: 0.85;
-    font-size: 20px;
-}
-
-/* ===== LOADING BAR (FIXED TO BOTTOM, STOPS BEFORE GMod UI) ===== */
-.loading-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-
-    /* Leaves space for GMod panel on right */
-    width: calc(100% - 320px);
-
-    padding: 10px 20px;
-}
-
-/* Text */
-.loading-text {
-    font-size: 13px;
-    margin-bottom: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: 7px;
+    text-transform: uppercase;
     opacity: 0.7;
+    color: #b8d8f0;
 }
 
-/* Bar background */
-.bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,0.15);
+/* ─── STATUS BADGE ─── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 28px;
+    padding: 6px 18px;
+    border: 1px solid rgba(100,180,255,0.3);
     border-radius: 2px;
-    overflow: hidden;
+    background: rgba(0,20,50,0.4);
+    backdrop-filter: blur(4px);
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(180,220,255,0.8);
+    font-family: 'Orbitron', monospace;
 }
 
-/* Progress */
-.progress {
-    height: 100%;
-    width: 0%;
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4af;
+    box-shadow: 0 0 8px #4af;
+    animation: dotBlink 1.4s ease-in-out infinite;
+}
 
-    /* cleaner white bar */
-    background: rgba(255,255,255,0.9);
+@keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.25; }
+}
 
-    transition: width 0.25s ease;
+/* ─── CORNER DECORATIONS ─── */
+.corner {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.55;
+}
+.corner::before,
+.corner::after {
+    content: '';
+    position: absolute;
+    background: rgba(100,180,255,0.7);
+}
+.corner::before { width: 2px; height: 100%; top: 0; }
+.corner::after  { height: 2px; width: 100%; top: 0; }
+
+.corner.tl { top: 18px; left: 18px; }
+.corner.tl::before { left: 0; }
+.corner.tl::after  { left: 0; }
+
+.corner.tr { top: 18px; right: 18px; transform: scaleX(-1); }
+.corner.tr::before { left: 0; }
+.corner.tr::after  { left: 0; }
+
+.corner.bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
+.corner.bl::before { left: 0; }
+.corner.bl::after  { left: 0; }
+
+.corner.br { bottom: 18px; right: 18px; transform: scale(-1); }
+.corner.br::before { left: 0; }
+.corner.br::after  { left: 0; }
+
+/* ─── SCAN LINE EFFECT ─── */
+.scanline {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(100,200,255,0.15), rgba(100,200,255,0.35), rgba(100,200,255,0.15), transparent);
+    z-index: 4;
+    pointer-events: none;
+    animation: scan 8s linear infinite;
+}
+
+@keyframes scan {
+    0%   { top: -2px; opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+}
+
+/* ─── BOTTOM INFO ROW ─── */
+.bottom-info {
+    position: fixed;
+    bottom: 20px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.loading-msg {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(180,220,255,0.65);
+    max-width: 420px;
+}
+
+.loading-msg span {
+    color: rgba(120,190,255,0.9);
+    font-weight: 600;
+}
+
+.step-counter {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: rgba(100,160,200,0.5);
+    text-align: right;
+}
+
+/* ─── TICK MARKS ─── */
+.tick-row {
+    position: fixed;
+    bottom: 48px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    gap: 4px;
+    align-items: flex-end;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.tick {
+    flex: 1;
+    height: 14px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 1px;
+    transition: background 0.3s ease, height 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tick.active {
+    background: rgba(100,185,255,0.75);
+    box-shadow: 0 0 6px rgba(80,160,255,0.5);
+}
+
+.tick.active:nth-child(odd)  { height: 18px; }
+.tick.active:nth-child(even) { height: 13px; }
+
+.tick.done {
+    background: rgba(60,130,200,0.35);
+    height: 8px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="background" id="bg"></div>
+<div class="background"></div>
+<div class="vignette"></div>
 <canvas id="stars"></canvas>
+<div class="scanline"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
 
 <div class="center">
+    <div class="accent-line"></div>
     <div class="logo-text">H2O Networks</div>
+    <div class="accent-line"></div>
     <div class="subtitle">Clone Wars Roleplay</div>
-</div>
-
-<div class="loading-container">
-    <div class="loading-text" id="loadingText">Initializing...</div>
-    <div class="bar">
-        <div class="progress" id="progress"></div>
+    <div class="status-badge">
+        <span class="status-dot"></span>
+        <span id="statusText">Connecting</span>
     </div>
 </div>
 
+<div class="tick-row" id="tickRow"></div>
+
+<div class="bottom-info">
+    <div class="loading-msg" id="loadingMsg"><span>Initializing</span> Republic systems...</div>
+    <div class="step-counter" id="stepCounter">0 / 20</div>
+</div>
+
 <script>
-/* Stars */
+/* ── Stars ── */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let stars = [];
-
-for (let i = 0; i < 150; i++) {
-    stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: Math.random() * 1.2,
-        speed: Math.random() * 0.3
-    });
+function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
 }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const stars = Array.from({ length: 180 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    radius: Math.random() * 1.1 + 0.1,
+    speed: Math.random() * 0.25 + 0.05,
+    opacity: Math.random() * 0.5 + 0.3
+}));
 
 function animateStars() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-
-    stars.forEach(star => {
-        star.y += star.speed;
-        if (star.y > canvas.height) star.y = 0;
-
+    stars.forEach(s => {
+        s.y += s.speed;
+        if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
         ctx.fill();
     });
-
     requestAnimationFrame(animateStars);
 }
 animateStars();
 
-/* Fake loading */
-let progress = 0;
-let progressBar = document.getElementById("progress");
-let loadingText = document.getElementById("loadingText");
+/* ── Build tick marks ── */
+const TICKS = 20;
+const tickRow = document.getElementById("tickRow");
+for (let i = 0; i < TICKS; i++) {
+    const t = document.createElement("div");
+    t.className = "tick";
+    t.id = `tick-${i}`;
+    tickRow.appendChild(t);
+}
 
-let messages = [
-    "Loading clones...",
-    "Preparing fleet...",
-    "Deploying battalions...",
-    "Linking Republic systems...",
-    "Almost ready..."
+/* ── Loading phases ── */
+const phases = [
+    { msg: "<span>Initializing</span> Republic systems",        status: "Connecting"    },
+    { msg: "<span>Loading</span> clone trooper data",           status: "Loading"       },
+    { msg: "<span>Preparing</span> Venator-class fleet",        status: "Loading"       },
+    { msg: "<span>Deploying</span> 501st battalions",           status: "Loading"       },
+    { msg: "<span>Syncing</span> Jedi Council comms",           status: "Syncing"       },
+    { msg: "<span>Calibrating</span> hyperspace coordinates",   status: "Syncing"       },
+    { msg: "<span>Linking</span> GAR command networks",         status: "Syncing"       },
+    { msg: "<span>Authenticating</span> unit credentials",      status: "Authenticating"},
+    { msg: "<span>Finalizing</span> mission parameters",        status: "Finalizing"    },
+    { msg: "<span>All systems</span> online — welcome, trooper", status: "Online"       }
 ];
 
-let interval = setInterval(() => {
-    progress += Math.random() * 10;
+let step = 0;
+const loadingMsg  = document.getElementById("loadingMsg");
+const stepCounter = document.getElementById("stepCounter");
+const statusText  = document.getElementById("statusText");
 
-    if (progress >= 100) {
-        progress = 100;
-        loadingText.innerText = "Ready!";
-        clearInterval(interval);
-    } else {
-        loadingText.innerText = messages[Math.floor(Math.random() * messages.length)];
+function getPhase(s) {
+    return phases[Math.min(Math.floor(s / TICKS * phases.length), phases.length - 1)];
+}
+
+function updateTicks(s) {
+    for (let i = 0; i < TICKS; i++) {
+        const el = document.getElementById(`tick-${i}`);
+        if (i < s - 1)       el.className = "tick done";
+        else if (i === s - 1) el.className = "tick active";
+        else                  el.className = "tick";
     }
+}
 
-    progressBar.style.width = progress + "%";
-}, 700);
+const interval = setInterval(() => {
+    // Slower near the end for tension
+    const jump = step < 16 ? Math.floor(Math.random() * 2) + 1 : 1;
+    step = Math.min(step + jump, TICKS);
+
+    updateTicks(step);
+    stepCounter.textContent = `${step} / ${TICKS}`;
+
+    const phase = getPhase(step);
+    loadingMsg.innerHTML   = phase.msg + "...";
+    statusText.textContent = phase.status;
+
+    if (step >= TICKS) {
+        loadingMsg.innerHTML   = "<span>All systems</span> online — welcome, trooper.";
+        statusText.textContent = "Online";
+        clearInterval(interval);
+    }
+}, 650);
 </script>
-
 </body>
 </html>
